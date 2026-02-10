@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Experience } from '../types';
+import { Experience } from '../types.ts';
 
 interface ExperienceProps {
   experiences: Experience[];

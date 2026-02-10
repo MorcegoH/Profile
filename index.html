@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR" style="scroll-behavior: smooth;">
 <head>
@@ -73,11 +74,6 @@
             opacity: 0.8;
         }
 
-        .bibliographic-border {
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
-            padding-left: 2rem;
-        }
-
         /* Scroll progress indicator */
         #scroll-progress {
             position: fixed;
@@ -114,10 +110,11 @@
 <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@^19.2.4",
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "@google/genai": "https://esm.sh/@google/genai",
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.40.0"
+    "react/": "https://esm.sh/react@^19.2.4/"
   }
 }
 </script>
@@ -125,6 +122,7 @@
 <body>
     <div id="scroll-progress"></div>
     <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
     <script>
         window.onscroll = function() {
             var winScroll = document.body.scrollTop || document.documentElement.scrollTop;

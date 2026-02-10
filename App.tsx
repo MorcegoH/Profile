@@ -1,13 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { PROFILE_DATA } from './constants';
-import { Hero } from './components/Hero';
-import { Header } from './components/Header';
-import { About } from './components/About';
-import { ExperienceSection } from './components/Experience';
-import { SkillsSection } from './components/Skills';
-import { ContactSection } from './components/Contact';
-import { GeminiAssistant } from './components/GeminiAssistant';
+import { PROFILE_DATA } from './constants.tsx';
+import { Hero } from './components/Hero.tsx';
+import { Header } from './components/Header.tsx';
+import { About } from './components/About.tsx';
+import { ExperienceSection } from './components/Experience.tsx';
+import { SkillsSection } from './components/Skills.tsx';
+import { ContactSection } from './components/Contact.tsx';
+import { GeminiAssistant } from './components/GeminiAssistant.tsx';
 
 const App: React.FC = () => {
   const [activeSection, setActiveSection] = useState('home');

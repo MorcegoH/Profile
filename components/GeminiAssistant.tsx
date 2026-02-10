@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
-import { ProfileData } from '../types';
+import { ProfileData } from '../types.ts';
 
 interface GeminiAssistantProps {
   profile: ProfileData;
@@ -58,7 +58,7 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
         contents: userMsg,
         config: {
           systemInstruction: systemInstruction,
-          temperature: 0.7, // Um pouco mais alto para ser menos "robótico"
+          temperature: 0.7,
         },
       });
 
@@ -75,8 +75,7 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
   return (
     <div className="fixed bottom-8 right-8 z-[100]">
       {isOpen ? (
-        <div className="w-80 md:w-96 glass-panel flex flex-col h-[500px] animate-fade-in rounded-sm border-white/10 shadow-2xl overflow-hidden">
-          {/* Header */}
+        <div className="w-80 md:w-96 glass-panel flex flex-col h-[500px] animate-fade-in rounded-sm border-white/10 shadow-2xl overflow-hidden text-white">
           <div className="p-5 border-b border-white/10 bg-black/60 flex justify-between items-center">
             <div className="flex items-center space-x-3">
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
@@ -85,8 +84,7 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
             <button onClick={() => setIsOpen(false)} className="text-slate-500 hover:text-white transition-colors text-xl">&times;</button>
           </div>
           
-          {/* Messages */}
-          <div className="flex-grow overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-white/5 scrollbar-track-transparent">
+          <div className="flex-grow overflow-y-auto p-6 space-y-6 scrollbar-thin">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[90%] p-4 text-xs leading-relaxed ${
@@ -106,7 +104,6 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
             <div ref={chatEndRef} />
           </div>
 
-          {/* Input */}
           <div className="p-5 border-t border-white/10 bg-black/40">
             <div className="flex space-x-3">
               <input 

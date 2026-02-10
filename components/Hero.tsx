@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ProfileData } from '../types';
+import { ProfileData } from '../types.ts';
 
 interface HeroProps {
   data: ProfileData;

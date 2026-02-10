@@ -1,6 +1,10 @@
 
 import React from 'react';
-import { ProfileData } from '../types';
+import { ProfileData } from '../types.ts';
+
+interface AboutProps {
+  data: ProfileData;
+}
 
 export const About: React.FC<AboutProps> = ({ data }) => {
   return (
@@ -59,7 +63,3 @@ export const About: React.FC<AboutProps> = ({ data }) => {
     </div>
   );
 };
-
-interface AboutProps {
-  data: ProfileData;
-}
