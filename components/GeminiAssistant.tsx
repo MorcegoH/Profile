@@ -23,45 +23,31 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
 
-    // Tenta obter a chave de forma segura
-    const apiKey = (window as any).process?.env?.API_KEY || process.env.API_KEY;
-
-    if (!apiKey) {
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        text: "CONFIGURAÇÃO PENDENTE: A chave de API não foi detectada pelo navegador. Certifique-se de que adicionou a variável API_KEY na Vercel e realizou o 'Redeploy'." 
-      }]);
-      return;
-    }
-
     const userMsg = input.trim();
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey });
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: userMsg,
         config: {
-          systemInstruction: `Você é o assistente executivo virtual do Heder Santos. Baseie-se exclusivamente nestes dados: ${JSON.stringify(profile)}. Responda com austeridade, precisão executiva e tom profissional em português. Seja conciso.`,
+          systemInstruction: `Você é o assistente executivo virtual do Heder Santos. Use estes dados: ${JSON.stringify(profile)}. Responda com austeridade, precisão executiva e tom profissional em português. Seja extremamente conciso.`,
           temperature: 0.7,
         },
       });
 
-      const aiText = response.text || "Desculpe, não consegui processar essa informação agora.";
+      const aiText = response.text || "Não foi possível processar sua solicitação no momento.";
       setMessages(prev => [...prev, { role: 'assistant', text: aiText }]);
     } catch (error: any) {
       console.error("AI Assistant Error:", error);
-      let errorMsg = "Houve uma falha na comunicação com a inteligência artificial.";
-      
-      if (error.message?.includes("API key")) {
-        errorMsg = "A chave de API configurada parece ser inválida ou expirou.";
-      }
-
-      setMessages(prev => [...prev, { role: 'assistant', text: errorMsg }]);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        text: "Houve uma falha na conexão executiva. Por favor, tente novamente em alguns instantes." 
+      }]);
     } finally {
       setLoading(false);
     }
@@ -93,7 +79,7 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-white/5 p-4 text-[10px] text-slate-500 italic font-serif">Processando consulta executiva...</div>
+                <div className="bg-white/5 p-4 text-[10px] text-slate-500 italic font-serif">Consultando base de dados estratégica...</div>
               </div>
             )}
             <div ref={chatEndRef} />
@@ -106,7 +92,7 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Perqunte sobre a carreira de Heder..."
+                placeholder="Pergunte sobre a carreira de Heder..."
                 className="flex-grow bg-transparent border-b border-white/10 p-2 text-xs text-white outline-none focus:border-blue-500 transition-colors font-serif italic"
               />
               <button 
