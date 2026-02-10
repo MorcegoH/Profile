@@ -79,7 +79,6 @@
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
     <script>
-        // Listener passivo para melhor performance de scroll
         window.addEventListener('scroll', () => {
             const h = document.documentElement;
             const scrolled = (window.scrollY / (h.scrollHeight - h.clientHeight)) * 100;
