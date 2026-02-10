@@ -23,36 +23,45 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
 
+    // Tenta obter a chave de forma segura
+    const apiKey = (window as any).process?.env?.API_KEY || process.env.API_KEY;
+
+    if (!apiKey) {
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        text: "CONFIGURAÇÃO PENDENTE: A chave de API não foi detectada pelo navegador. Certifique-se de que adicionou a variável API_KEY na Vercel e realizou o 'Redeploy'." 
+      }]);
+      return;
+    }
+
     const userMsg = input.trim();
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setLoading(true);
 
     try {
-      // Tentativa de inicialização direta para garantir que a SDK capture o erro se a chave for inválida
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
+      const ai = new GoogleGenAI({ apiKey });
       
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: userMsg,
         config: {
-          systemInstruction: `Você é o assistente virtual do executivo Heder Santos. Use estes dados: ${JSON.stringify(profile)}. Responda de forma profissional, executiva e concisa em português.`,
+          systemInstruction: `Você é o assistente executivo virtual do Heder Santos. Baseie-se exclusivamente nestes dados: ${JSON.stringify(profile)}. Responda com austeridade, precisão executiva e tom profissional em português. Seja conciso.`,
           temperature: 0.7,
         },
       });
 
-      const aiText = response.text || "No momento não consigo processar sua dúvida.";
+      const aiText = response.text || "Desculpe, não consegui processar essa informação agora.";
       setMessages(prev => [...prev, { role: 'assistant', text: aiText }]);
     } catch (error: any) {
       console.error("AI Assistant Error:", error);
-      
-      let errorMessage = "Erro técnico na conexão. Verifique se a API_KEY foi configurada e o Redeploy foi realizado na Vercel.";
+      let errorMsg = "Houve uma falha na comunicação com a inteligência artificial.";
       
       if (error.message?.includes("API key")) {
-        errorMessage = "Chave de API não encontrada ou inválida. Configure a variável API_KEY no dashboard da Vercel e faça um Redeploy.";
+        errorMsg = "A chave de API configurada parece ser inválida ou expirou.";
       }
 
-      setMessages(prev => [...prev, { role: 'assistant', text: errorMessage }]);
+      setMessages(prev => [...prev, { role: 'assistant', text: errorMsg }]);
     } finally {
       setLoading(false);
     }
@@ -75,8 +84,8 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[90%] p-4 text-xs leading-relaxed ${
                   m.role === 'user' 
-                  ? 'bg-blue-600/20 text-blue-100 rounded-lg border border-blue-500/30' 
-                  : 'bg-white/5 text-slate-300 rounded-lg border border-white/10'
+                  ? 'bg-blue-600/20 text-blue-100 rounded-lg border border-blue-500/30 font-serif' 
+                  : 'bg-white/5 text-slate-300 rounded-lg border border-white/10 font-serif italic'
                 }`}>
                   {m.text}
                 </div>
@@ -84,7 +93,7 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-white/5 p-4 text-[10px] text-slate-500 italic">Consultando estratégia...</div>
+                <div className="bg-white/5 p-4 text-[10px] text-slate-500 italic font-serif">Processando consulta executiva...</div>
               </div>
             )}
             <div ref={chatEndRef} />
@@ -97,8 +106,8 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Pergunte sobre o Heder..."
-                className="flex-grow bg-transparent border-b border-white/10 p-2 text-xs text-white outline-none focus:border-blue-500 transition-colors"
+                placeholder="Perqunte sobre a carreira de Heder..."
+                className="flex-grow bg-transparent border-b border-white/10 p-2 text-xs text-white outline-none focus:border-blue-500 transition-colors font-serif italic"
               />
               <button 
                 onClick={handleSend}
