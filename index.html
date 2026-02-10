@@ -5,9 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Heder Santos | Perfil Executivo</title>
+    <script>
+        // Define o objeto process antes de qualquer outro script para evitar o erro de API Key
+        window.process = { env: { API_KEY: "" } };
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=UnifrakturMaguntia&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
         
         body {
             font-family: "Times New Roman", Times, serif;
@@ -30,7 +34,6 @@
             z-index: 50;
         }
 
-        .font-serif-elegant { font-family: "Times New Roman", Times, serif; }
         .font-cinzel { font-family: 'Cinzel', serif; }
         .executive-gradient {
             background: radial-gradient(circle at top right, #001a33 0%, #000000 70%),
@@ -101,7 +104,8 @@
             var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
             var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
             var scrolled = (winScroll / height) * 100;
-            document.getElementById("scroll-progress").style.width = scrolled + "%";
+            const progress = document.getElementById("scroll-progress");
+            if (progress) progress.style.width = scrolled + "%";
         };
     </script>
 </body>

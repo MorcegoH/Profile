@@ -10,18 +10,14 @@ interface GeminiAssistantProps {
 export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{role: 'user' | 'assistant', text: string}[]>([
-    { role: 'assistant', text: `Olá! Sou o Assistente Digital M. do Heder Santos. Estou aqui para te contar um pouco sobre a carreira dele. Como posso ajudar?` }
+    { role: 'assistant', text: `Olá! Sou o Assistente Digital M. do Heder Santos. Posso te ajudar a conhecer melhor a trajetória dele?` }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSend = async () => {
@@ -33,23 +29,24 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
     setLoading(true);
 
     try {
-      // Inicialização conforme diretrizes: usa process.env.API_KEY diretamente
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      // Cria a instância da IA apenas no momento do clique para garantir a captura da chave
+      const apiKey = process.env.API_KEY || (window as any).process?.env?.API_KEY;
+      const ai = new GoogleGenAI({ apiKey });
       
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: userMsg,
         config: {
-          systemInstruction: `Você é o assistente do executivo Heder Santos. Perfil: ${JSON.stringify(profile)}. Responda de forma profissional e curta em português.`,
+          systemInstruction: `Você é o assistente virtual do executivo Heder Santos. Use estes dados: ${JSON.stringify(profile)}. Responda de forma profissional, executiva e concisa em português.`,
           temperature: 0.7,
         },
       });
 
-      const aiText = response.text || "Não foi possível obter uma resposta agora.";
+      const aiText = response.text || "No momento não consigo processar sua dúvida. Tente o contato direto.";
       setMessages(prev => [...prev, { role: 'assistant', text: aiText }]);
     } catch (error) {
-      console.error("AI Error:", error);
-      setMessages(prev => [...prev, { role: 'assistant', text: "Houve um erro técnico na conexão. Por favor, tente novamente mais tarde." }]);
+      console.error("AI Assistant Error:", error);
+      setMessages(prev => [...prev, { role: 'assistant', text: "Ocorreu um erro técnico na conexão. Certifique-se de que a API_KEY está configurada no ambiente." }]);
     } finally {
       setLoading(false);
     }
@@ -72,8 +69,8 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[90%] p-4 text-xs leading-relaxed ${
                   m.role === 'user' 
-                  ? 'bg-blue-600/20 text-blue-100 rounded-tl-lg rounded-tr-lg rounded-bl-lg border border-blue-500/30' 
-                  : 'bg-white/5 text-slate-300 rounded-tr-lg rounded-br-lg rounded-bl-lg border border-white/10'
+                  ? 'bg-blue-600/20 text-blue-100 rounded-lg border border-blue-500/30' 
+                  : 'bg-white/5 text-slate-300 rounded-lg border border-white/10'
                 }`}>
                   {m.text}
                 </div>
@@ -81,7 +78,7 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-white/5 p-4 text-[10px] text-slate-500 italic">Analisando...</div>
+                <div className="bg-white/5 p-4 text-[10px] text-slate-500 italic">Consultando trajetória...</div>
               </div>
             )}
             <div ref={chatEndRef} />
@@ -100,7 +97,7 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
               <button 
                 onClick={handleSend}
                 disabled={loading}
-                className="text-[10px] font-bold uppercase tracking-widest text-blue-400 hover:text-white transition-colors disabled:opacity-30 font-cinzel"
+                className="text-[10px] font-bold uppercase tracking-widest text-blue-400 hover:text-white transition-colors font-cinzel"
               >
                 Enviar
               </button>
