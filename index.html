@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Heder Santos | Perfil Executivo</title>
+    <!-- Shim para garantir que process.env não quebre o navegador -->
+    <script>
+        window.process = window.process || { env: { API_KEY: "" } };
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=UnifrakturMaguntia&display=swap');
@@ -17,7 +21,6 @@
             overflow-x: hidden;
         }
 
-        /* Paper texture overlay for bibliographic feel */
         body::before {
             content: "";
             position: fixed;
@@ -31,27 +34,11 @@
             z-index: 50;
         }
 
-        .font-serif-elegant {
-            font-family: "Times New Roman", Times, serif;
-        }
-
-        .font-cinzel {
-            font-family: 'Cinzel', serif;
-        }
-
-        .font-gothic {
-            font-family: 'UnifrakturMaguntia', cursive;
-        }
-
+        .font-serif-elegant { font-family: "Times New Roman", Times, serif; }
+        .font-cinzel { font-family: 'Cinzel', serif; }
         .executive-gradient {
             background: radial-gradient(circle at top right, #001a33 0%, #000000 70%),
                         radial-gradient(circle at bottom left, #1a0033 0%, #000000 70%);
-        }
-
-        .text-gradient {
-            background: linear-gradient(to right, #3b82f6, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         .glass-panel {
@@ -74,7 +61,6 @@
             opacity: 0.8;
         }
 
-        /* Scroll progress indicator */
         #scroll-progress {
             position: fixed;
             top: 0;
@@ -86,19 +72,10 @@
             transition: width 0.1s ease-out;
         }
 
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #000;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #1e1b4b;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #3b82f6;
-        }
-
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #1e1b4b; }
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }

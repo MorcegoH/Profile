@@ -25,7 +25,15 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
   }, [messages]);
 
   const handleSend = async () => {
+    const apiKey = process.env.API_KEY;
+    
     if (!input.trim() || loading) return;
+
+    if (!apiKey) {
+      setMessages(prev => [...prev, { role: 'user', text: input.trim() }, { role: 'assistant', text: "Erro: Chave de API não configurada no ambiente. Por favor, configure a API_KEY nas variáveis de ambiente do seu servidor." }]);
+      setInput('');
+      return;
+    }
 
     const userMsg = input.trim();
     setInput('');
@@ -33,24 +41,14 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
     setLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      const ai = new GoogleGenAI({ apiKey: apiKey });
       const systemInstruction = `
         Você é o 'Assistente Digital M.' do Heder Santos.
         Seu objetivo é apresentar o Heder de forma executiva, mas muito acessível e fácil de entender.
-        
         Dados do Perfil: ${JSON.stringify(profile)}.
-        
         Personalidade: Profissional, amigável, moderno e descomplicado. Você deve soar como um parceiro de negócios em uma conversa leve.
-        
-        Linguagem: Português claro. Evite termos muito difíceis ou "corporativismo" exagerado. 
-        Em vez de 'Trajetória', use 'Carreira' ou 'Caminhada'. 
-        Em vez de 'Domínios', use 'O que ele faz bem' ou 'Habilidades'.
-        Em vez de 'Governança estratégica', explique como 'Organizar a empresa para crescer com segurança'.
-        
-        Instruções: 
-        1. Responda baseado nos fatos do perfil.
-        2. Se não souber algo, diga que pode tentar conectar a pessoa diretamente ao Heder na seção de contato.
-        3. Mantenha as respostas curtas e fáceis de ler.
+        Linguagem: Português claro. Evite termos muito difíceis. 
+        Mantenha as respostas curtas e fáceis de ler.
       `;
 
       const response = await ai.models.generateContent({
@@ -62,11 +60,11 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
         },
       });
 
-      const aiText = response.text || "Puxa, tive um probleminha para acessar as informações agora. Que tal dar uma olhadinha na parte de contato do site?";
+      const aiText = response.text || "Tive um problema ao processar. Tente novamente.";
       setMessages(prev => [...prev, { role: 'assistant', text: aiText }]);
     } catch (error) {
-      console.error("AI Error:", error);
-      setMessages(prev => [...prev, { role: 'assistant', text: "Estou com uma instabilidade técnica. Você pode falar com o Heder direto pelo WhatsApp ou E-mail, que tal?" }]);
+      console.error("Gemini AI Error:", error);
+      setMessages(prev => [...prev, { role: 'assistant', text: "Estou com uma instabilidade técnica. Verifique se a API Key é válida ou se há saldo no Google AI Studio." }]);
     } finally {
       setLoading(false);
     }
@@ -130,7 +128,7 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
           className="group relative flex items-center justify-center w-14 h-14 glass-panel hover:bg-white/5 transition-all duration-500 rounded-full border-white/20 shadow-xl"
         >
           <svg className="w-6 h-6 text-blue-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 10h.01M12 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
           </svg>
           <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,1)]"></div>
         </button>
