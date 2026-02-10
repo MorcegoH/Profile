@@ -68,8 +68,8 @@ const App: React.FC = () => {
           <p className="text-slate-400 text-xs tracking-widest uppercase mb-4">
             &copy; {new Date().getFullYear()} Todos os direitos reservados.
           </p>
-          <p className="text-slate-500 font-light italic text-sm max-w-md mx-auto leading-relaxed mb-8">
-            Autoridade técnica e excelência estratégica em gestão executiva.
+          <p className="text-slate-500 font-light italic text-sm max-w-lg mx-auto leading-relaxed mb-8">
+            A conquista do futuro, só se dá pelo excelente trabalho do presente, usando a matéria prima do passado.
           </p>
           <div className="pt-8 border-t border-white/5">
             <p className="text-[9px] text-slate-600 uppercase tracking-[0.4em] font-cinzel font-bold">
