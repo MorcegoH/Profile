@@ -10,7 +10,7 @@ interface GeminiAssistantProps {
 export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{role: 'user' | 'assistant', text: string}[]>([
-    { role: 'assistant', text: `Olá! Sou o Assistente Digital M. do Heder Santos. Estou aqui para te contar um pouco sobre a carreira dele de um jeito simples e direto. Como posso te ajudar hoje?` }
+    { role: 'assistant', text: `Olá! Sou o Assistente Digital M. do Heder Santos. Estou aqui para te contar um pouco sobre a carreira dele. Como posso ajudar?` }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,15 +25,7 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
   }, [messages]);
 
   const handleSend = async () => {
-    const apiKey = process.env.API_KEY;
-    
     if (!input.trim() || loading) return;
-
-    if (!apiKey) {
-      setMessages(prev => [...prev, { role: 'user', text: input.trim() }, { role: 'assistant', text: "Erro: Chave de API não configurada no ambiente. Por favor, configure a API_KEY nas variáveis de ambiente do seu servidor." }]);
-      setInput('');
-      return;
-    }
 
     const userMsg = input.trim();
     setInput('');
@@ -41,30 +33,23 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
     setLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: apiKey });
-      const systemInstruction = `
-        Você é o 'Assistente Digital M.' do Heder Santos.
-        Seu objetivo é apresentar o Heder de forma executiva, mas muito acessível e fácil de entender.
-        Dados do Perfil: ${JSON.stringify(profile)}.
-        Personalidade: Profissional, amigável, moderno e descomplicado. Você deve soar como um parceiro de negócios em uma conversa leve.
-        Linguagem: Português claro. Evite termos muito difíceis. 
-        Mantenha as respostas curtas e fáceis de ler.
-      `;
-
+      // Inicialização conforme diretrizes: usa process.env.API_KEY diretamente
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: userMsg,
         config: {
-          systemInstruction: systemInstruction,
+          systemInstruction: `Você é o assistente do executivo Heder Santos. Perfil: ${JSON.stringify(profile)}. Responda de forma profissional e curta em português.`,
           temperature: 0.7,
         },
       });
 
-      const aiText = response.text || "Tive um problema ao processar. Tente novamente.";
+      const aiText = response.text || "Não foi possível obter uma resposta agora.";
       setMessages(prev => [...prev, { role: 'assistant', text: aiText }]);
     } catch (error) {
-      console.error("Gemini AI Error:", error);
-      setMessages(prev => [...prev, { role: 'assistant', text: "Estou com uma instabilidade técnica. Verifique se a API Key é válida ou se há saldo no Google AI Studio." }]);
+      console.error("AI Error:", error);
+      setMessages(prev => [...prev, { role: 'assistant', text: "Houve um erro técnico na conexão. Por favor, tente novamente mais tarde." }]);
     } finally {
       setLoading(false);
     }
@@ -96,7 +81,7 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-white/5 p-4 text-[10px] text-slate-500 italic">Buscando informações...</div>
+                <div className="bg-white/5 p-4 text-[10px] text-slate-500 italic">Analisando...</div>
               </div>
             )}
             <div ref={chatEndRef} />
@@ -109,7 +94,7 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Pergunte sobre a carreira do Heder..."
+                placeholder="Pergunte sobre o Heder..."
                 className="flex-grow bg-transparent border-b border-white/10 p-2 text-xs text-white outline-none focus:border-blue-500 transition-colors"
               />
               <button 
@@ -128,7 +113,7 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
           className="group relative flex items-center justify-center w-14 h-14 glass-panel hover:bg-white/5 transition-all duration-500 rounded-full border-white/20 shadow-xl"
         >
           <svg className="w-6 h-6 text-blue-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 10h.01M12 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
           </svg>
           <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,1)]"></div>
         </button>
