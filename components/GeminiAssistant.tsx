@@ -29,9 +29,8 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
     setLoading(true);
 
     try {
-      // Cria a instância da IA apenas no momento do clique para garantir a captura da chave
-      const apiKey = process.env.API_KEY || (window as any).process?.env?.API_KEY;
-      const ai = new GoogleGenAI({ apiKey });
+      // Uso direto conforme diretrizes da SDK
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
@@ -42,11 +41,11 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
         },
       });
 
-      const aiText = response.text || "No momento não consigo processar sua dúvida. Tente o contato direto.";
+      const aiText = response.text || "No momento não consigo processar sua dúvida.";
       setMessages(prev => [...prev, { role: 'assistant', text: aiText }]);
     } catch (error) {
       console.error("AI Assistant Error:", error);
-      setMessages(prev => [...prev, { role: 'assistant', text: "Ocorreu um erro técnico na conexão. Certifique-se de que a API_KEY está configurada no ambiente." }]);
+      setMessages(prev => [...prev, { role: 'assistant', text: "Erro técnico na conexão com a inteligência artificial. Verifique as variáveis de ambiente." }]);
     } finally {
       setLoading(false);
     }
@@ -78,7 +77,7 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-white/5 p-4 text-[10px] text-slate-500 italic">Consultando trajetória...</div>
+                <div className="bg-white/5 p-4 text-[10px] text-slate-500 italic">Consultando...</div>
               </div>
             )}
             <div ref={chatEndRef} />
