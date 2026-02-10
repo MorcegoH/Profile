@@ -29,8 +29,8 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
     setLoading(true);
 
     try {
-      // Uso direto conforme diretrizes da SDK
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      // Tentativa de inicialização direta para garantir que a SDK capture o erro se a chave for inválida
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
       
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
@@ -43,9 +43,16 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
 
       const aiText = response.text || "No momento não consigo processar sua dúvida.";
       setMessages(prev => [...prev, { role: 'assistant', text: aiText }]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("AI Assistant Error:", error);
-      setMessages(prev => [...prev, { role: 'assistant', text: "Erro técnico na conexão com a inteligência artificial. Verifique as variáveis de ambiente." }]);
+      
+      let errorMessage = "Erro técnico na conexão. Verifique se a API_KEY foi configurada e o Redeploy foi realizado na Vercel.";
+      
+      if (error.message?.includes("API key")) {
+        errorMessage = "Chave de API não encontrada ou inválida. Configure a variável API_KEY no dashboard da Vercel e faça um Redeploy.";
+      }
+
+      setMessages(prev => [...prev, { role: 'assistant', text: errorMessage }]);
     } finally {
       setLoading(false);
     }
@@ -77,7 +84,7 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-white/5 p-4 text-[10px] text-slate-500 italic">Consultando...</div>
+                <div className="bg-white/5 p-4 text-[10px] text-slate-500 italic">Consultando estratégia...</div>
               </div>
             )}
             <div ref={chatEndRef} />
