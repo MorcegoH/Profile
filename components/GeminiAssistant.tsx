@@ -10,52 +10,60 @@ interface GeminiAssistantProps {
 export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{role: 'user' | 'assistant', text: string}[]>([
-    { role: 'assistant', text: `Bem-vindo à interface estratégica de Heder Santos. Como posso auxiliar em sua análise profissional?` }
+    { 
+      role: 'assistant', 
+      text: `Bem-vindo à interface estratégica de Heder Santos. Como posso auxiliar em sua análise profissional?` 
+    }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isOpen) chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isOpen]);
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const handleSend = async () => {
+    if (!input.trim() || loading) return;
+
     const userMsg = input.trim();
-    if (!userMsg || loading) return;
-
-    // Obter chave de forma segura
-    const apiKey = typeof process !== 'undefined' ? process.env.API_KEY : null;
-
-    if (!apiKey) {
-      setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
-      setMessages(prev => [...prev, { role: 'assistant', text: "Configuração Pendente: A chave de acesso à base estratégica não foi detectada no ambiente." }]);
-      setInput('');
-      return;
-    }
-
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey });
+      // Inicialização direta usando a chave do ambiente
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: userMsg,
         config: {
-          systemInstruction: `Persona: Assistente Executivo Sênior de Heder Santos. Contexto profissional: ${JSON.stringify(profile)}. Diretriz: Respostas austeras, formais, precisas e curtas. Use português. Foco em governança e gestão.`,
-          temperature: 0.5,
+          systemInstruction: `Você é o assistente virtual executivo do Heder Santos. 
+          Use estes dados para embasar suas respostas: ${JSON.stringify(profile)}. 
+          Tom de voz: Executivo, austero, direto e altamente profissional. 
+          Responda sempre em português brasileiro. 
+          Se perguntarem algo fora do escopo profissional do Heder, decline polidamente focando na trajetória dele.`,
+          temperature: 0.4,
         },
       });
 
-      const aiText = response.text || "Protocolo de resposta não gerou dados.";
+      const aiText = response.text || "A consulta não retornou dados. Por favor, reformule a solicitação.";
       setMessages(prev => [...prev, { role: 'assistant', text: aiText }]);
     } catch (error: any) {
-      console.error("Critical Assistant Failure:", error);
+      console.error("AI Error:", error);
+      
+      let errorMessage = "Erro na conexão com a base de dados estratégica.";
+      
+      if (!process.env.API_KEY) {
+        errorMessage = "Falha de Identificação: A chave API não foi propagada pelo servidor. Realize um novo 'Redeploy' no painel do Vercel.";
+      } else if (error?.message?.includes("API key not valid")) {
+        errorMessage = "Credencial Inválida: A chave configurada no Vercel não é aceita pelo serviço de IA.";
+      }
+
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        text: `Falha na conexão estratégica. Causa provável: ${error.message || 'Erro de rede ou chave inválida'}.` 
+        text: errorMessage 
       }]);
     } finally {
       setLoading(false);
@@ -65,37 +73,37 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
   return (
     <div className="fixed bottom-8 right-8 z-[100]">
       {isOpen ? (
-        <div className="w-80 md:w-96 glass-panel flex flex-col h-[500px] animate-fade-in rounded-sm shadow-2xl overflow-hidden text-white border-white/10">
-          <div className="p-5 border-b border-white/10 bg-black/95 flex justify-between items-center">
+        <div className="w-80 md:w-96 glass-panel flex flex-col h-[500px] animate-fade-in rounded-sm border-white/10 shadow-2xl overflow-hidden text-white">
+          <div className="p-5 border-b border-white/10 bg-black/60 flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
-              <span className="text-[9px] font-bold uppercase tracking-[0.3em] font-cinzel opacity-80">Interface M. Executiva</span>
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] font-cinzel text-white/90">Interface M. Executiva</span>
             </div>
             <button onClick={() => setIsOpen(false)} className="text-slate-500 hover:text-white transition-colors text-xl">&times;</button>
           </div>
           
-          <div className="flex-grow overflow-y-auto p-6 space-y-6 scrollbar-thin bg-black/40">
+          <div className="flex-grow overflow-y-auto p-6 space-y-6 scrollbar-thin bg-black/20">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] p-4 text-[11px] leading-relaxed rounded-sm border ${
+                <div className={`max-w-[90%] p-4 text-xs leading-relaxed ${
                   m.role === 'user' 
-                  ? 'bg-blue-600/10 border-blue-500/30 text-blue-50 font-serif' 
-                  : 'bg-white/[0.03] border-white/10 text-slate-300 italic font-serif'
+                  ? 'bg-blue-600/20 text-blue-100 rounded-sm border border-blue-500/30' 
+                  : 'bg-white/5 text-slate-300 rounded-sm border border-white/10 font-serif italic shadow-lg'
                 }`}>
                   {m.text}
                 </div>
               </div>
             ))}
             {loading && (
-              <div className="flex justify-start animate-pulse">
-                <div className="text-[9px] text-slate-500 italic font-serif">Acessando base de dados...</div>
+              <div className="flex justify-start">
+                <div className="bg-white/5 p-4 text-[10px] text-slate-500 italic border border-white/5">Sincronizando com base estratégica...</div>
               </div>
             )}
             <div ref={chatEndRef} />
           </div>
 
-          <div className="p-5 border-t border-white/10 bg-black/60">
-            <div className="flex space-x-2">
+          <div className="p-5 border-t border-white/10 bg-black/40">
+            <div className="flex space-x-3">
               <input 
                 type="text" 
                 value={input}
@@ -105,11 +113,11 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
                 className="flex-grow bg-transparent border-b border-white/10 p-2 text-xs text-white outline-none focus:border-blue-500 transition-colors font-serif italic"
               />
               <button 
-                onClick={handleSend} 
-                disabled={loading} 
-                className="text-[9px] font-bold uppercase tracking-widest text-blue-400 hover:text-white transition-colors font-cinzel disabled:opacity-30"
+                onClick={handleSend}
+                disabled={loading}
+                className="text-[10px] font-bold uppercase tracking-widest text-blue-400 hover:text-white transition-colors font-cinzel disabled:text-slate-700"
               >
-                Enviar
+                {loading ? "..." : "Enviar"}
               </button>
             </div>
           </div>
@@ -117,11 +125,12 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
       ) : (
         <button 
           onClick={() => setIsOpen(true)}
-          className="group flex items-center justify-center w-12 h-12 glass-panel hover:bg-white/5 transition-all duration-300 rounded-full border-white/20 shadow-xl"
+          className="group relative flex items-center justify-center w-14 h-14 glass-panel hover:bg-white/5 transition-all duration-500 rounded-full border-white/20 shadow-xl"
         >
-          <svg className="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+          <svg className="w-6 h-6 text-blue-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
           </svg>
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,1)]"></div>
         </button>
       )}
     </div>

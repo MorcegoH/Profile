@@ -13,33 +13,27 @@ const App: React.FC = () => {
   const [activeSection, setActiveSection] = useState('home');
 
   useEffect(() => {
-    const observerOptions = {
-      root: null,
-      rootMargin: '-25% 0px -65% 0px',
-      threshold: 0
-    };
+    const handleScroll = () => {
+      const sections = ['home', 'sobre-mim', 'experiencia', 'competencias', 'contato'];
+      const scrollPosition = window.scrollY + 150;
 
-    const observerCallback = (entries: IntersectionObserverEntry[]) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          setActiveSection(entry.target.id);
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const { offsetTop, offsetHeight } = element;
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+            setActiveSection(section);
+          }
         }
-      });
+      }
     };
 
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
-    const sectionIds = ['home', 'sobre-mim', 'experiencia', 'competencias', 'contato'];
-    
-    sectionIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-blue-500/30">
+    <div className="min-h-screen bg-black text-white font-serif-elegant">
       <Header activeSection={activeSection} />
       
       <main>
@@ -51,7 +45,7 @@ const App: React.FC = () => {
           <About data={PROFILE_DATA} />
         </section>
 
-        <section id="experiencia" className="py-16">
+        <section id="experiencia" className="py-16 bg-black">
           <ExperienceSection experiences={PROFILE_DATA.experiences} />
         </section>
 
@@ -60,31 +54,32 @@ const App: React.FC = () => {
           <SkillsSection skills={PROFILE_DATA.skills} />
         </section>
 
-        <section id="contato" className="py-16">
+        <section id="contato" className="py-16 bg-black">
           <ContactSection contact={PROFILE_DATA.contact} />
         </section>
       </main>
 
       <footer className="pb-16 px-6">
-        <div className="max-w-5xl mx-auto glass-panel p-12 rounded-sm text-center">
-          <div className="text-2xl font-bold tracking-[0.5em] text-white mb-6 uppercase font-cinzel">
+        <div className="max-w-5xl mx-auto glass-panel p-12 rounded-2xl text-center">
+          <div className="text-2xl font-bold tracking-[0.5em] text-white mb-6 uppercase">
             Heder Santos
           </div>
           <div className="w-12 h-px bg-blue-500 mx-auto mb-6 opacity-50"></div>
-          <p className="text-slate-400 text-[10px] tracking-[0.4em] uppercase mb-4 font-cinzel">
-            &copy; {new Date().getFullYear()} Excelência em Gestão Estratégica
+          <p className="text-slate-400 text-xs tracking-widest uppercase mb-4">
+            &copy; {new Date().getFullYear()} Todos os direitos reservados.
           </p>
-          <p className="text-slate-500 font-light italic text-sm max-w-lg mx-auto leading-relaxed mb-8 font-serif">
-            "A conquista do futuro só se dá pelo excelente trabalho do presente, usando a matéria-prima do passado."
+          <p className="text-slate-500 font-light italic text-sm max-w-lg mx-auto leading-relaxed mb-8">
+            A conquista do futuro, só se dá pelo excelente trabalho do presente, usando a matéria prima do passado.
           </p>
           <div className="pt-8 border-t border-white/5">
-            <p className="text-[9px] text-slate-600 uppercase tracking-[0.4em] font-cinzel">
-              Brasília • Brasil • Portfólio Executivo
+            <p className="text-[9px] text-slate-600 uppercase tracking-[0.4em] font-cinzel font-bold">
+              Este site é <span className="text-blue-500/60">cookie-free</span> • Privacidade por design
             </p>
           </div>
         </div>
       </footer>
 
+      {/* Assistente Digital (Curadoria) */}
       <GeminiAssistant profile={PROFILE_DATA} />
     </div>
   );
