@@ -27,33 +27,31 @@ export const ContactSection: React.FC<ContactProps> = ({ contact }) => {
     setStatus('submitting');
 
     try {
-      // Guideline: Always use a new GoogleGenAI instance with named parameter apiKey from process.env.API_KEY
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
       const prompt = `
         Analise esta solicitação para Heder Santos:
         Nome: ${formData.name}, Empresa: ${formData.org}, Mensagem: ${formData.message}
-        Retorne um JSON puro: {"analysis": "Sua mensagem foi protocolada estrategicamente.", "code": "HS-${Math.floor(1000 + Math.random() * 9000)}"}
+        Retorne OBRIGATORIAMENTE apenas um JSON puro, sem markdown: {"analysis": "Breve análise executiva da mensagem.", "code": "HS-RANDOMCODE"}
       `;
 
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: prompt,
         config: { 
-          temperature: 0.7,
+          temperature: 0.1,
           responseMimeType: "application/json"
         }
       });
 
-      // Guideline: Access text directly from response.text (not as a method)
-      const result = JSON.parse(response.text || '{"analysis": "Protocolo gerado offline.", "code": "HS-OFFLINE"}');
+      const responseText = response.text || "";
+      const result = JSON.parse(responseText.replace(/```json|```/g, '').trim());
       setProtocolInfo(result);
       setStatus('success');
     } catch (error) {
-      console.error("Form error:", error);
-      // Fallback amigável caso a API falhe
+      console.error("Erro no formulário:", error);
       setProtocolInfo({
-        analysis: "Sua mensagem foi enviada, porém o protocolo inteligente está indisponível no momento.",
-        code: `HS-${Date.now().toString().slice(-4)}`
+        analysis: "Sua mensagem foi mapeada e será revisada pela assessoria executiva.",
+        code: `HS-${Math.floor(Math.random() * 9999)}`
       });
       setStatus('success');
     }
@@ -137,41 +135,41 @@ export const ContactSection: React.FC<ContactProps> = ({ contact }) => {
       <div className="glass-panel rounded-sm border border-white/5 p-6 md:p-12 min-h-[400px]">
         {status === 'success' ? (
           <div className="animate-fade-in flex flex-col items-center justify-center h-full text-center space-y-6 py-8">
-            <h4 className="text-2xl md:text-3xl font-serif italic text-white">Mensagem Recebida</h4>
+            <h4 className="text-2xl md:text-3xl font-serif italic text-white">Mensagem Protocolada</h4>
             <div className="max-w-md w-full p-6 bg-white/[0.02] border border-white/5 rounded-sm">
               <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500 font-bold font-cinzel mb-2">Protocolo: {protocolInfo?.code}</p>
               <p className="text-sm text-slate-300 font-serif italic leading-relaxed">"{protocolInfo?.analysis}"</p>
-              <button onClick={() => setStatus('idle')} className="mt-6 text-[9px] uppercase tracking-widest text-blue-500">Novo Contato</button>
+              <button onClick={() => setStatus('idle')} className="mt-6 text-[9px] uppercase tracking-widest text-blue-500 hover:text-white transition-colors">Iniciar Nova Correspondência</button>
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
             <div className="lg:col-span-2 border-l-2 border-blue-500/30 pl-6">
               <h4 className="text-[9px] uppercase tracking-widest text-slate-500 mb-4 font-bold font-cinzel">Protocolo de Contato</h4>
-              <p className="text-xs text-slate-400 italic font-serif">Contatos profissionais focados em visão estratégica.</p>
+              <p className="text-xs text-slate-400 italic font-serif leading-relaxed">Contatos profissionais focados em visão estratégica, governança e conformidade regulatória.</p>
             </div>
 
             <div className="lg:col-span-3">
                <form className={`space-y-6 ${status === 'submitting' ? 'opacity-30 pointer-events-none' : 'opacity-100'}`} onSubmit={handleSubmit}>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                    <div className="border-b border-white/10 py-2">
-                     <label className="block text-[8px] uppercase tracking-widest text-slate-600 mb-1 font-bold font-cinzel">Seu Nome</label>
-                     <input name="name" required value={formData.name} onChange={handleInputChange} type="text" className="w-full bg-transparent text-white focus:outline-none text-xs md:text-sm font-serif italic" />
+                     <label className="block text-[8px] uppercase tracking-widest text-slate-600 mb-1 font-bold font-cinzel">Identificação</label>
+                     <input name="name" required value={formData.name} onChange={handleInputChange} type="text" placeholder="Seu Nome" className="w-full bg-transparent text-white focus:outline-none text-xs md:text-sm font-serif italic" />
                    </div>
                    <div className="border-b border-white/10 py-2">
-                     <label className="block text-[8px] uppercase tracking-widest text-slate-600 mb-1 font-bold font-cinzel">Empresa</label>
-                     <input name="org" value={formData.org} onChange={handleInputChange} type="text" className="w-full bg-transparent text-white focus:outline-none text-xs md:text-sm font-serif italic" />
+                     <label className="block text-[8px] uppercase tracking-widest text-slate-600 mb-1 font-bold font-cinzel">Organização</label>
+                     <input name="org" value={formData.org} onChange={handleInputChange} type="text" placeholder="Empresa / Instituição" className="w-full bg-transparent text-white focus:outline-none text-xs md:text-sm font-serif italic" />
                    </div>
                  </div>
                  <div className="border-b border-white/10 py-2">
-                   <label className="block text-[8px] uppercase tracking-widest text-slate-600 mb-1 font-bold font-cinzel">Mensagem</label>
+                   <label className="block text-[8px] uppercase tracking-widest text-slate-600 mb-1 font-bold font-cinzel">Objeto da Mensagem</label>
                    <textarea name="message" required value={formData.message} onChange={handleInputChange} rows={2} className="w-full bg-transparent text-white focus:outline-none resize-none text-xs md:text-sm font-serif italic"></textarea>
                  </div>
                  <button className="px-12 py-4 bg-white text-black text-[9px] font-bold uppercase tracking-[0.4em] hover:bg-blue-600 hover:text-white transition-all rounded-sm">
-                   {status === 'submitting' ? 'Enviando...' : 'Enviar Mensagem'}
+                   {status === 'submitting' ? 'Transmitindo...' : 'Enviar Correspondência'}
                  </button>
                </form>
-               {status === 'error' && <p className="mt-4 text-[9px] text-red-500">Ocorreu um problema no envio. Verifique a chave de API no servidor.</p>}
+               {status === 'error' && <p className="mt-4 text-[9px] text-red-500">Erro na transmissão. Verifique a governança do servidor.</p>}
             </div>
           </div>
         )}
