@@ -7,44 +7,28 @@ interface GeminiAssistantProps {
   profile: ProfileData;
 }
 
-// Interface matching the environment's expected AIStudio type to resolve declaration conflicts
-interface AIStudio {
-  hasSelectedApiKey: () => Promise<boolean>;
-  openSelectKey: () => Promise<void>;
-}
-
-declare global {
-  interface Window {
-    aistudio: AIStudio;
-  }
-}
-
 export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [hasAuth, setHasAuth] = useState<boolean>(false);
   const [messages, setMessages] = useState<{role: 'user' | 'assistant', text: string}[]>([
     { 
       role: 'assistant', 
-      text: `Interface M. Executiva pronta. Aguardando autorização de acesso à base estratégica para iniciar análise.` 
+      text: `Interface M. Executiva aguardando inicialização do protocolo de segurança.` 
     }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isBillingIssue, setIsBillingIssue] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const checkStatus = async () => {
-      // Use window.aistudio.hasSelectedApiKey() to check whether an API key has been selected
+    const checkAuth = async () => {
       if (window.aistudio) {
-        try {
-          const authed = await window.aistudio.hasSelectedApiKey();
-          setHasAuth(authed);
-        } catch (e) {
-          console.error("Auth check failed:", e);
-        }
+        const authed = await window.aistudio.hasSelectedApiKey();
+        setHasAuth(authed);
       }
     };
-    if (isOpen) checkStatus();
+    if (isOpen) checkAuth();
   }, [isOpen]);
 
   useEffect(() => {
@@ -53,15 +37,12 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
 
   const handleActivate = async () => {
     if (window.aistudio) {
-      try {
-        // Trigger the key selection dialog via openSelectKey()
-        await window.aistudio.openSelectKey();
-        // Guideline: MUST assume the key selection was successful after triggering openSelectKey() and proceed
-        setHasAuth(true); 
-        setMessages(prev => [...prev, { role: 'assistant', text: "Acesso autorizado. Como posso auxiliar em sua análise estratégica agora?" }]);
-      } catch (e) {
-        console.error("Failed to open key selector:", e);
-      }
+      await window.aistudio.openSelectKey();
+      setHasAuth(true);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        text: "Chave vinculada com sucesso. A interface está desbloqueada para consultas estratégicas." 
+      }]);
     }
   };
 
@@ -72,38 +53,34 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setLoading(true);
+    setIsBillingIssue(false);
 
     try {
-      // Guideline: Create a new GoogleGenAI instance right before making an API call to ensure up-to-date key usage
-      // Guideline: The API key must be obtained exclusively from the environment variable process.env.API_KEY
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+      // Instanciação obrigatória seguindo as regras de segurança do AI Studio
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
       
       const response = await ai.models.generateContent({
-        // Using Pro model for complex reasoning tasks (resume assistant)
-        model: 'gemini-3-pro-preview',
+        model: 'gemini-3-flash-preview',
         contents: userMsg,
         config: {
-          systemInstruction: `Você é a Interface M. Executiva, assistente virtual do Heder Santos. 
-          Perfil do Heder: ${JSON.stringify(profile)}. 
-          Tom de voz: Altamente profissional, austero, conciso e estratégico. 
-          Idioma: Português Brasileiro.`,
-          temperature: 0.5,
+          systemInstruction: `Você é a Interface Executiva do Heder Santos. Perfil: ${JSON.stringify(profile)}. Responda de forma austera, executiva e direta.`,
+          temperature: 0.2,
         },
       });
 
-      // Guideline: Access text property directly (not as a method)
-      const aiText = response.text || "Sem retorno da base de dados.";
+      const aiText = response.text || "Sem resposta do servidor.";
       setMessages(prev => [...prev, { role: 'assistant', text: aiText }]);
     } catch (error: any) {
-      console.error("AI Error:", error);
-      let errorMsg = "Falha na comunicação estratégica.";
+      console.error("Erro na Interface:", error);
       
-      // Guideline: Handle "Requested entity was not found" by resetting auth state
-      if (error?.message?.includes("Requested entity was not found") || error?.message?.includes("404")) {
-        errorMsg = "Sessão não identificada ou projeto faturado não localizado. Por favor, reative a interface para validar sua credencial.";
-        setHasAuth(false);
+      let errorMsg = "Ocorreu um erro na comunicação com a IA.";
+      
+      // Identifica se é problema de cota/billing (comum no Nível Gratuito)
+      if (error?.message?.includes("entity was not found") || error?.message?.includes("403") || error?.message?.includes("404")) {
+        setIsBillingIssue(true);
+        errorMsg = "Acesso Negado pela Google Cloud. O 'Nível Gratuito' sem faturamento configurado pode restringir o uso desta interface em sites externos.";
       }
-      
+
       setMessages(prev => [...prev, { role: 'assistant', text: errorMsg }]);
     } finally {
       setLoading(false);
@@ -113,30 +90,35 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
   return (
     <div className="fixed bottom-8 right-8 z-[100]">
       {isOpen ? (
-        <div className="w-80 md:w-96 glass-panel flex flex-col h-[500px] animate-fade-in rounded-sm border-white/10 shadow-2xl overflow-hidden text-white">
-          <div className="p-5 border-b border-white/10 bg-black/60 flex justify-between items-center">
+        <div className="w-80 md:w-96 glass-panel flex flex-col h-[520px] animate-fade-in rounded-sm border-white/10 shadow-2xl overflow-hidden text-white">
+          {/* Header */}
+          <div className="p-5 border-b border-white/10 bg-black/80 flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <div className={`w-2 h-2 rounded-full ${hasAuth ? 'bg-green-500 animate-pulse' : 'bg-blue-500 animate-pulse'}`}></div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] font-cinzel text-white/90">Interface M. Executiva</span>
+              <div className={`w-2 h-2 rounded-full ${hasAuth ? 'bg-green-500' : 'bg-yellow-500'} animate-pulse`}></div>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] font-cinzel">M. Executiva v3.0</span>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-slate-500 hover:text-white transition-colors text-xl">&times;</button>
+            <button onClick={() => setIsOpen(false)} className="text-slate-500 hover:text-white transition-colors">&times;</button>
           </div>
           
-          <div className="flex-grow overflow-y-auto p-6 space-y-6 scrollbar-thin bg-black/20">
-            {!hasAuth && (
-              <div className="p-6 border border-blue-500/20 bg-blue-500/5 rounded-sm text-center space-y-4 mb-4">
-                <p className="text-[10px] uppercase tracking-widest text-blue-400 font-bold font-cinzel">Configuração Necessária</p>
-                <p className="text-xs text-slate-400 italic font-serif">A base estratégica requer validação de identidade (GCP Billing) para processar consultas.</p>
+          {/* Corpo do Chat */}
+          <div className="flex-grow overflow-y-auto p-6 space-y-6 scrollbar-thin bg-black/40">
+            {/* Aviso de Autenticação / Billing */}
+            {!hasAuth || isBillingIssue ? (
+              <div className="p-5 border border-blue-500/30 bg-blue-500/5 rounded-sm space-y-4">
+                <p className="text-[9px] uppercase tracking-widest text-blue-400 font-bold">Ação Necessária</p>
+                <p className="text-[11px] text-slate-400 italic font-serif leading-relaxed">
+                  Para garantir o funcionamento, clique no botão abaixo para autorizar o uso da sua chave do AI Studio. 
+                  {isBillingIssue && <strong className="block mt-2 text-red-400/80">Importante: Conforme seu print, é altamente recomendável ativar o 'Faturamento' no Google Cloud para liberar a cota de uso externo.</strong>}
+                </p>
                 <button 
                   onClick={handleActivate}
-                  className="w-full py-3 bg-blue-600 text-white text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-blue-500 transition-all rounded-sm shadow-lg shadow-blue-900/20"
+                  className="w-full py-2 bg-blue-600 text-white text-[9px] font-bold uppercase tracking-widest hover:bg-blue-500 transition-all rounded-sm"
                 >
-                  Ativar Interface
+                  {isBillingIssue ? "Tentar Reativar" : "Ativar Interface"}
                 </button>
-                {/* Guideline: A link to the billing documentation must be provided */}
-                <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noreferrer" className="block text-[8px] text-slate-600 underline hover:text-slate-400">Documentação de Faturamento</a>
+                <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" className="block text-center text-[8px] text-slate-600 underline">Documentação de Billing</a>
               </div>
-            )}
+            ) : null}
 
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -149,29 +131,31 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
                 </div>
               </div>
             ))}
+            
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-white/5 p-4 text-[10px] text-slate-500 italic">Processando consulta estratégica...</div>
+                <div className="bg-white/5 p-4 text-[10px] text-slate-500 italic border border-white/5">Consultando base...</div>
               </div>
             )}
             <div ref={chatEndRef} />
           </div>
 
-          <div className="p-5 border-t border-white/10 bg-black/40">
+          {/* Input Area */}
+          <div className="p-5 border-t border-white/10 bg-black/60">
             <div className="flex space-x-3">
               <input 
                 type="text" 
-                disabled={!hasAuth}
                 value={input}
+                disabled={!hasAuth && !isBillingIssue}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                placeholder={hasAuth ? "Solicitar análise técnica..." : "Interface Bloqueada"}
+                placeholder={hasAuth ? "Analisar trajetória..." : "Aguardando ativação..."}
                 className="flex-grow bg-transparent border-b border-white/10 p-2 text-xs text-white outline-none focus:border-blue-500 transition-colors font-serif italic disabled:opacity-20"
               />
               <button 
                 onClick={handleSend}
-                disabled={loading || !hasAuth}
-                className="text-[10px] font-bold uppercase tracking-widest text-blue-400 hover:text-white transition-colors font-cinzel disabled:text-slate-700"
+                disabled={loading || (!hasAuth && !isBillingIssue)}
+                className="text-[10px] font-bold uppercase tracking-widest text-blue-400 hover:text-white transition-colors font-cinzel disabled:text-slate-800"
               >
                 Enviar
               </button>
@@ -183,9 +167,7 @@ export const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ profile }) => 
           onClick={() => setIsOpen(true)}
           className="group relative flex items-center justify-center w-14 h-14 glass-panel hover:bg-white/5 transition-all duration-500 rounded-full border-white/20 shadow-xl"
         >
-          <svg className="w-6 h-6 text-blue-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
-          </svg>
+          <div className="w-6 h-6 text-blue-400 flex items-center justify-center font-cinzel font-bold text-lg group-hover:scale-110 transition-transform">AI</div>
           <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,1)]"></div>
         </button>
       )}
