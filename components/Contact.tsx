@@ -20,44 +20,37 @@ export const ContactSection: React.FC<ContactProps> = ({ contact }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const getApiKey = () => {
-    try {
-      if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
-        const key = process.env.API_KEY.trim();
-        return key.length > 0 ? key : null;
-      }
-    } catch (e) {
-      return null;
-    }
-    return null;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.message) return;
 
     setStatus('submitting');
-    const apiKey = getApiKey();
+    
+    // Acesso direto à API Key conforme requisitos do sistema
+    const apiKey = process.env.API_KEY;
 
-    // Lógica de Fallover: Se não houver chave, simula sucesso para não frustrar o usuário
     if (!apiKey) {
-      console.warn("ContactForm: Operando em modo de simulação (API Key ausente).");
-      setTimeout(() => {
-        setProtocolInfo({
-          analysis: "[SIMULAÇÃO] Mensagem recebida pelo servidor local. O sistema identificou o teor corporativo e priorizou o encaminhamento.",
-          code: `DEMO-${Math.floor(Math.random() * 10000)}`
-        });
-        setStatus('success');
-      }, 1500);
+      console.error("CONTACT FORM: API Key não encontrada.");
+      setStatus('error');
       return;
     }
 
     try {
       const ai = new GoogleGenAI({ apiKey });
       const prompt = `
-        Analise esta solicitação para Heder Santos:
-        Nome: ${formData.name}, Empresa: ${formData.org}, Mensagem: ${formData.message}
-        Retorne OBRIGATORIAMENTE apenas um JSON puro, sem markdown: {"analysis": "Breve análise executiva da mensagem.", "code": "HS-RANDOMCODE"}
+        Analise esta solicitação de contato profissional para Heder Santos.
+        
+        DADOS:
+        Nome: ${formData.name}
+        Organização: ${formData.org}
+        Mensagem: ${formData.message}
+        
+        TAREFA:
+        1. Gere uma "análise executiva" curta (máx 2 frases) sobre o teor da mensagem, em tom formal e corporativo.
+        2. Gere um código de protocolo fictício no formato "HS-XXXX".
+        
+        SAÍDA OBRIGATÓRIA (JSON PURO):
+        {"analysis": "...", "code": "..."}
       `;
 
       const response = await ai.models.generateContent({
@@ -70,17 +63,15 @@ export const ContactSection: React.FC<ContactProps> = ({ contact }) => {
       });
 
       const responseText = response.text || "";
-      const result = JSON.parse(responseText.replace(/```json|```/g, '').trim());
+      // Limpeza robusta para garantir parse do JSON
+      const cleanJson = responseText.replace(/```json|```/g, '').trim();
+      const result = JSON.parse(cleanJson);
+      
       setProtocolInfo(result);
       setStatus('success');
     } catch (error) {
-      console.error("Erro no processamento da IA:", error);
-      // Fallback de segurança se a API falhar mesmo com chave
-      setProtocolInfo({
-        analysis: "Mensagem protocolada no servidor de contingência. A análise automática está indisponível momentaneamente, mas o conteúdo foi preservado.",
-        code: `FALLBACK-${Math.floor(Math.random() * 9999)}`
-      });
-      setStatus('success');
+      console.error("Erro na integração com IA:", error);
+      setStatus('error');
     }
   };
 
