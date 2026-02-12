@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { GoogleGenAI } from "@google/genai";
 
 interface ContactProps {
   contact: {
@@ -26,53 +25,15 @@ export const ContactSection: React.FC<ContactProps> = ({ contact }) => {
 
     setStatus('submitting');
     
-    // Acesso direto à API Key conforme requisitos do sistema
-    const apiKey = process.env.API_KEY;
-
-    if (!apiKey) {
-      console.error("CONTACT FORM: API Key não encontrada.");
-      setStatus('error');
-      return;
-    }
-
-    try {
-      const ai = new GoogleGenAI({ apiKey });
-      const prompt = `
-        Analise esta solicitação de contato profissional para Heder Santos.
-        
-        DADOS:
-        Nome: ${formData.name}
-        Organização: ${formData.org}
-        Mensagem: ${formData.message}
-        
-        TAREFA:
-        1. Gere uma "análise executiva" curta (máx 2 frases) sobre o teor da mensagem, em tom formal e corporativo.
-        2. Gere um código de protocolo fictício no formato "HS-XXXX".
-        
-        SAÍDA OBRIGATÓRIA (JSON PURO):
-        {"analysis": "...", "code": "..."}
-      `;
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: prompt,
-        config: { 
-          temperature: 0.1,
-          responseMimeType: "application/json"
-        }
+    // Simulação de tempo de processamento de rede (1.5s) para UX realista
+    setTimeout(() => {
+      const randomCode = Math.floor(1000 + Math.random() * 9000);
+      setProtocolInfo({
+        analysis: "Confirmação de recebimento. Sua mensagem foi encaminhada para a triagem executiva e será respondida dentro do prazo padrão de governança.",
+        code: `HS-${randomCode}`
       });
-
-      const responseText = response.text || "";
-      // Limpeza robusta para garantir parse do JSON
-      const cleanJson = responseText.replace(/```json|```/g, '').trim();
-      const result = JSON.parse(cleanJson);
-      
-      setProtocolInfo(result);
       setStatus('success');
-    } catch (error) {
-      console.error("Erro na integração com IA:", error);
-      setStatus('error');
-    }
+    }, 1500);
   };
 
   const contactCards = [

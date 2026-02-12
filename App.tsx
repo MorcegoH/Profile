@@ -7,7 +7,6 @@ import { About } from './components/About.tsx';
 import { ExperienceSection } from './components/Experience.tsx';
 import { SkillsSection } from './components/Skills.tsx';
 import { ContactSection } from './components/Contact.tsx';
-import { GeminiAssistant } from './components/GeminiAssistant.tsx';
 
 const App: React.FC = () => {
   const [activeSection, setActiveSection] = useState('home');
@@ -78,9 +77,6 @@ const App: React.FC = () => {
           </div>
         </div>
       </footer>
-
-      {/* Assistente Digital (Curadoria) */}
-      <GeminiAssistant profile={PROFILE_DATA} />
     </div>
   );
 };
