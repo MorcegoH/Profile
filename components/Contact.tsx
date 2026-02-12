@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 
 interface ContactProps {
   contact: {
@@ -11,31 +11,6 @@ interface ContactProps {
 }
 
 export const ContactSection: React.FC<ContactProps> = ({ contact }) => {
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
-  const [protocolInfo, setProtocolInfo] = useState<{ analysis: string, code: string } | null>(null);
-  const [formData, setFormData] = useState({ name: '', org: '', message: '' });
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.message) return;
-
-    setStatus('submitting');
-    
-    // Simulação de tempo de processamento de rede (1.5s) para UX realista
-    setTimeout(() => {
-      const randomCode = Math.floor(1000 + Math.random() * 9000);
-      setProtocolInfo({
-        analysis: "Confirmação de recebimento. Sua mensagem foi encaminhada para a triagem executiva e será respondida dentro do prazo padrão de governança.",
-        code: `HS-${randomCode}`
-      });
-      setStatus('success');
-    }, 1500);
-  };
-
   const contactCards = [
     {
       label: 'LinkedIn',
@@ -51,22 +26,22 @@ export const ContactSection: React.FC<ContactProps> = ({ contact }) => {
       borderColor: 'hover:border-[#0A66C2]/50'
     },
     {
-      label: 'E-mail',
+      label: 'E-mail Direto',
       value: contact.email,
       href: `mailto:${contact.email}`,
+      // Ícone do Gmail com suporte a múltiplas cores no hover
       icon: (
-        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M3 7l9 6 9-6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M3 7v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7" strokeLinecap="round" strokeLinejoin="round" />
+        <svg className="w-6 h-6 transition-colors duration-500" viewBox="0 0 24 24" fill="currentColor">
+          <path className="group-hover:fill-[#EA4335] transition-colors duration-500" d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z" />
         </svg>
       ),
-      hoverIconColor: 'text-white',
-      glowColor: 'hover:shadow-[0_0_35px_rgba(234,67,53,0.35)]',
-      borderColor: 'hover:border-red-500/50'
+      hoverIconColor: 'text-[#EA4335]', 
+      glowColor: 'hover:shadow-[0_0_35px_rgba(234,67,53,0.4)]',
+      borderColor: 'hover:border-[#EA4335]/50'
     },
     {
       label: 'WhatsApp',
-      value: 'Conexão Direta',
+      value: 'Conexão Executiva',
       href: `https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`,
       icon: (
         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -81,77 +56,51 @@ export const ContactSection: React.FC<ContactProps> = ({ contact }) => {
 
   return (
     <div className="max-w-5xl mx-auto px-6">
-      <div className="mb-12 text-center">
+      <div className="mb-16 text-center">
         <span className="section-number">V</span>
-        <h3 className="text-2xl md:text-4xl font-bold mb-1 tracking-tight text-white italic font-serif">Correspondência</h3>
-        <div className="h-px w-16 md:w-20 bg-blue-600 mx-auto opacity-50"></div>
+        <h3 className="text-2xl md:text-5xl font-bold mb-1 tracking-tight text-white italic font-serif">Correspondência</h3>
+        <div className="h-px w-16 md:w-32 bg-blue-600 mx-auto opacity-50 mt-4"></div>
+        <p className="text-slate-500 font-cinzel text-[10px] tracking-[0.4em] uppercase mt-8 font-bold">Canais Oficiais de Comunicação</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {contactCards.map((card, i) => (
           <a
             key={i}
             href={card.href}
             target="_blank"
             rel="noopener noreferrer"
-            className={`group glass-panel p-8 rounded-sm border border-white/5 ${card.borderColor} transition-all duration-700 flex flex-col items-center text-center space-y-4 hover:-translate-y-3 ${card.glowColor}`}
+            className={`group glass-panel p-10 md:p-14 rounded-sm border border-white/5 ${card.borderColor} transition-all duration-700 flex flex-col items-center text-center space-y-6 hover:-translate-y-4 ${card.glowColor}`}
           >
-            <div className={`text-slate-500 group-hover:${card.hoverIconColor} transition-all duration-500 transform group-hover:scale-110`}>
+            <div className={`text-slate-500 transition-all duration-500 transform group-hover:scale-125 ${card.label === 'E-mail Direto' ? '' : `group-hover:${card.hoverIconColor}`}`}>
               {card.icon}
             </div>
-            <div>
-              <p className="text-[8px] md:text-[10px] uppercase tracking-[0.4em] text-slate-500 font-bold font-cinzel mb-1 group-hover:text-white transition-colors">
+            <div className="space-y-2">
+              <p className="text-[10px] md:text-[11px] uppercase tracking-[0.5em] text-slate-500 font-bold font-cinzel group-hover:text-white transition-colors">
                 {card.label}
               </p>
-              <p className="text-xs md:text-sm font-serif italic text-slate-400 group-hover:text-white transition-colors">
+              <p className="text-sm md:text-base font-serif italic text-slate-400 group-hover:text-white transition-colors">
                 {card.value}
               </p>
+            </div>
+            <div className="pt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+               <span className="text-[9px] text-blue-400 font-cinzel tracking-widest uppercase">Acessar Canal §</span>
             </div>
           </a>
         ))}
       </div>
 
-      <div className="glass-panel rounded-sm border border-white/5 p-6 md:p-12 min-h-[400px]">
-        {status === 'success' ? (
-          <div className="animate-fade-in flex flex-col items-center justify-center h-full text-center space-y-6 py-8">
-            <h4 className="text-2xl md:text-3xl font-serif italic text-white">Mensagem Protocolada</h4>
-            <div className="max-w-md w-full p-6 bg-white/[0.02] border border-white/5 rounded-sm">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500 font-bold font-cinzel mb-2">Protocolo: {protocolInfo?.code}</p>
-              <p className="text-sm text-slate-300 font-serif italic leading-relaxed">"{protocolInfo?.analysis}"</p>
-              <button onClick={() => setStatus('idle')} className="mt-6 text-[9px] uppercase tracking-widest text-blue-500 hover:text-white transition-colors">Iniciar Nova Correspondência</button>
-            </div>
+      <div className="mt-20 text-center">
+        <div className="inline-block p-8 border border-white/5 bg-white/[0.01] rounded-sm">
+          <p className="text-xs text-slate-500 italic font-serif max-w-lg mx-auto leading-relaxed">
+            "A prontidão na resposta é o primeiro pilar da eficiência executiva. Sinta-se à vontade para utilizar os canais acima para diálogos estratégicos ou parcerias institucionais."
+          </p>
+          <div className="mt-4 flex justify-center space-x-2">
+            <div className="w-1 h-1 bg-blue-500/30 rounded-full"></div>
+            <div className="w-1 h-1 bg-blue-500/30 rounded-full"></div>
+            <div className="w-1 h-1 bg-blue-500/30 rounded-full"></div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-            <div className="lg:col-span-2 border-l-2 border-blue-500/30 pl-6">
-              <h4 className="text-[9px] uppercase tracking-widest text-slate-500 mb-4 font-bold font-cinzel">Protocolo de Contato</h4>
-              <p className="text-xs text-slate-400 italic font-serif leading-relaxed">Contatos profissionais focados em visão estratégica, governança e conformidade regulatória.</p>
-            </div>
-
-            <div className="lg:col-span-3">
-               <form className={`space-y-6 ${status === 'submitting' ? 'opacity-30 pointer-events-none' : 'opacity-100'}`} onSubmit={handleSubmit}>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                   <div className="border-b border-white/10 py-2">
-                     <label className="block text-[8px] uppercase tracking-widest text-slate-600 mb-1 font-bold font-cinzel">Identificação</label>
-                     <input name="name" required value={formData.name} onChange={handleInputChange} type="text" placeholder="Seu Nome" className="w-full bg-transparent text-white focus:outline-none text-xs md:text-sm font-serif italic" />
-                   </div>
-                   <div className="border-b border-white/10 py-2">
-                     <label className="block text-[8px] uppercase tracking-widest text-slate-600 mb-1 font-bold font-cinzel">Organização</label>
-                     <input name="org" value={formData.org} onChange={handleInputChange} type="text" placeholder="Empresa / Instituição" className="w-full bg-transparent text-white focus:outline-none text-xs md:text-sm font-serif italic" />
-                   </div>
-                 </div>
-                 <div className="border-b border-white/10 py-2">
-                   <label className="block text-[8px] uppercase tracking-widest text-slate-600 mb-1 font-bold font-cinzel">Objeto da Mensagem</label>
-                   <textarea name="message" required value={formData.message} onChange={handleInputChange} rows={2} className="w-full bg-transparent text-white focus:outline-none resize-none text-xs md:text-sm font-serif italic"></textarea>
-                 </div>
-                 <button className="px-12 py-4 bg-white text-black text-[9px] font-bold uppercase tracking-[0.4em] hover:bg-blue-600 hover:text-white transition-all rounded-sm">
-                   {status === 'submitting' ? 'Transmitindo...' : 'Enviar Correspondência'}
-                 </button>
-               </form>
-               {status === 'error' && <p className="mt-4 text-[9px] text-red-500">Erro na transmissão. Verifique a governança do servidor.</p>}
-            </div>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
