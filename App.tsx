@@ -7,6 +7,7 @@ import { About } from './components/About.tsx';
 import { ExperienceSection } from './components/Experience.tsx';
 import { SkillsSection } from './components/Skills.tsx';
 import { ContactSection } from './components/Contact.tsx';
+import { GeminiAssistant } from './components/GeminiAssistant.tsx';
 
 const App: React.FC = () => {
   const [activeSection, setActiveSection] = useState('home');
@@ -34,6 +35,7 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white font-serif-elegant">
       <Header activeSection={activeSection} />
+      <GeminiAssistant profile={PROFILE_DATA} />
       
       <main>
         <section id="home">
@@ -70,10 +72,18 @@ const App: React.FC = () => {
           <p className="text-slate-500 font-light italic text-sm max-w-lg mx-auto leading-relaxed mb-8">
             A conquista do futuro, só se dá pelo excelente trabalho do presente, usando a matéria prima do passado.
           </p>
-          <div className="pt-8 border-t border-white/5">
+          <div className="pt-8 border-t border-white/5 flex flex-col items-center space-y-4">
             <p className="text-[9px] text-slate-600 uppercase tracking-[0.4em] font-cinzel font-bold">
               Este site é <span className="text-blue-500/60">cookie-free</span> • Privacidade por design
             </p>
+            
+            {/* Contador de Acessos (Hits) - GitHub Integration */}
+            <div className="opacity-10 hover:opacity-100 grayscale hover:grayscale-0 transition-all duration-1000 transform scale-75 origin-center">
+              <img 
+                src="https://hits.dwyl.com/heder-santos/executive-portfolio.svg?style=flat-square&color=3b82f6" 
+                alt="Contador de Acessos" 
+              />
+            </div>
           </div>
         </div>
       </footer>
